@@ -75,165 +75,163 @@
     .thumb:hover {
       opacity: 0.8;
     }
-.modal-body {
-  position: relative;
-}
 
-.nav-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 2.5rem;
-  color: white;
-  opacity: 0;
-  transition: opacity 0.3s;
-  cursor: pointer;
-  z-index: 10;
-  user-select: none;
-}
+    .modal-body {
+      position: relative;
+    }
 
-.nav-arrow:hover {
-  opacity: 1 !important;
-}
+    .nav-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 2.5rem;
+      color: white;
+      opacity: 0;
+      transition: opacity 0.3s;
+      cursor: pointer;
+      z-index: 10;
+      user-select: none;
+    }
 
-.modal-body:hover .nav-arrow {
-  opacity: 0.7;
-}
+    .nav-arrow:hover {
+      opacity: 1 !important;
+    }
 
-.nav-left {
-  left: 20px;
-}
+    .modal-body:hover .nav-arrow {
+      opacity: 0.7;
+    }
 
-.nav-right {
-  right: 20px;
-}
+    .nav-left {
+      left: 20px;
+    }
 
+    .nav-right {
+      right: 20px;
+    }
   </style>
 </head>
 <body>
-<div class="container py-5">
-  <h1 class="mb-4 text-center">Dave's Image Gallery</h1>
-  <div class="row" id="gallery">
-    <!-- Thumbnails inserted here -->
+  <div class="container py-5">
+    <h1 class="mb-4 text-center">Dave's Image Gallery</h1>
+    <div class="row" id="gallery">
+      <!-- Thumbnails inserted here -->
+    </div>
   </div>
-</div>
 
-<!-- Modal for full image -->
-<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content">
-      <div class="modal-body text-center">
-  <span class="nav-arrow nav-left">&larr;</span>
-  <img src="" id="modalImage" class="img-fluid" alt="Full Size">
-  <span class="nav-arrow nav-right">&rarr;</span>
+  <!-- Modal for full image -->
+  <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-body text-center">
+          <span class="nav-arrow nav-left">&larr;</span>
+          <img src="" id="modalImage" class="img-fluid" alt="Full Size">
+          <span class="nav-arrow nav-right">&rarr;</span>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-const gallery = document.getElementById('gallery');
-const modalImage = document.getElementById('modalImage');
-const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const gallery = document.getElementById('gallery');
+    const modalImage = document.getElementById('modalImage');
+    const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
 
-let imageList = [];
-let currentIndex = 0;
+    let imageList = [];
+    let currentIndex = 0;
 
-// Load image list from JSON
-fetch('images.json')
-  .then(response => response.json())
-  .then(filenames => {
-    imageList = filenames;
+    // Load image list from JSON
+    fetch('images.json')
+      .then(response => response.json())
+      .then(filenames => {
+        imageList = filenames;
 
-    filenames.forEach((filename, index) => {
-      const col = document.createElement('div');
-      col.className = 'col-6 col-sm-4 col-md-3 mb-4';
-      col.innerHTML = `
-        <img src="images/${filename}" class="img-fluid thumb" alt="" data-index="${index}" data-bs-toggle="modal" data-bs-target="#imageModal">
-      `;
-      gallery.appendChild(col);
+        filenames.forEach((filename, index) => {
+          const col = document.createElement('div');
+          col.className = 'col-6 col-sm-4 col-md-3 mb-4';
+          col.innerHTML = `
+            <img src="images/${filename}" class="img-fluid thumb" alt="" data-index="${index}" data-bs-toggle="modal" data-bs-target="#imageModal">
+          `;
+          gallery.appendChild(col);
+        });
+      });
+
+    // Handle thumbnail click
+    gallery.addEventListener('click', function (e) {
+      if (e.target && e.target.matches('img.thumb')) {
+        currentIndex = parseInt(e.target.dataset.index);
+        showModalImage(currentIndex);
+      }
     });
-  });
 
-// Handle thumbnail click
-gallery.addEventListener('click', function (e) {
-  if (e.target && e.target.matches('img.thumb')) {
-    currentIndex = parseInt(e.target.dataset.index);
-    showModalImage(currentIndex);
-  }
-});
-
-function showModalImage(index) {
-  modalImage.src = 'images/' + imageList[index];
-}
-
-// Handle left/right click on modal image
-modalImage.addEventListener('click', function (e) {
-  const width = modalImage.clientWidth;
-  const x = e.offsetX;
-
-  if (x < width / 2) {
-    // Clicked left side
-    currentIndex = (currentIndex - 1 + imageList.length) % imageList.length;
-  } else {
-    // Clicked right side
-    currentIndex = (currentIndex + 1) % imageList.length;
-  }
-
-  showModalImage(currentIndex);
-});
-
-document.querySelector('.nav-left').addEventListener('click', () => {
-  currentIndex = (currentIndex - 1 + imageList.length) % imageList.length;
-  showModalImage(currentIndex);
-});
-
-document.querySelector('.nav-right').addEventListener('click', () => {
-  currentIndex = (currentIndex + 1) % imageList.length;
-  showModalImage(currentIndex);
-});
-
-document.addEventListener('keydown', function (e) {
-  if (!document.getElementById('imageModal').classList.contains('show')) return;
-
-  if (e.key === 'ArrowLeft') {
-    currentIndex = (currentIndex - 1 + imageList.length) % imageList.length;
-    showModalImage(currentIndex);
-  } else if (e.key === 'ArrowRight') {
-    currentIndex = (currentIndex + 1) % imageList.length;
-    showModalImage(currentIndex);
-  }
-});
-
-let touchStartX = 0;
-let touchEndX = 0;
-
-modalImage.addEventListener('touchstart', function (e) {
-  touchStartX = e.changedTouches[0].screenX;
-});
-
-modalImage.addEventListener('touchend', function (e) {
-  touchEndX = e.changedTouches[0].screenX;
-  handleSwipe();
-});
-
-function handleSwipe() {
-  const diff = touchEndX - touchStartX;
-  if (Math.abs(diff) > 50) { // Minimum swipe distance
-    if (diff > 0) {
-      // Swipe right (show previous)
-      currentIndex = (currentIndex - 1 + imageList.length) % imageList.length;
-    } else {
-      // Swipe left (show next)
-      currentIndex = (currentIndex + 1) % imageList.length;
+    function showModalImage(index) {
+      modalImage.src = 'images/' + imageList[index];
     }
-    showModalImage(currentIndex);
-  }
-}
 
-</script>
+    // Handle left/right click on modal image
+    modalImage.addEventListener('click', function (e) {
+      const width = modalImage.clientWidth;
+      const x = e.offsetX;
 
-</body>
+      if (x < width / 2) {
+        // Clicked left side
+        currentIndex = (currentIndex - 1 + imageList.length) % imageList.length;
+      } else {
+        // Clicked right side
+        currentIndex = (currentIndex + 1) % imageList.length;
+      }
+
+      showModalImage(currentIndex);
+    });
+
+    document.querySelector('.nav-left').addEventListener('click', () => {
+      currentIndex = (currentIndex - 1 + imageList.length) % imageList.length;
+      showModalImage(currentIndex);
+    });
+
+    document.querySelector('.nav-right').addEventListener('click', () => {
+      currentIndex = (currentIndex + 1) % imageList.length;
+      showModalImage(currentIndex);
+    });
+
+    document.addEventListener('keydown', function (e) {
+      if (!document.getElementById('imageModal').classList.contains('show')) return;
+
+      if (e.key === 'ArrowLeft') {
+        currentIndex = (currentIndex - 1 + imageList.length) % imageList.length;
+        showModalImage(currentIndex);
+      } else if (e.key === 'ArrowRight') {
+        currentIndex = (currentIndex + 1) % imageList.length;
+        showModalImage(currentIndex);
+      }
+    });
+
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    modalImage.addEventListener('touchstart', function (e) {
+      touchStartX = e.changedTouches[0].screenX;
+    });
+
+    modalImage.addEventListener('touchend', function (e) {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    });
+
+    function handleSwipe() {
+      const diff = touchEndX - touchStartX;
+      if (Math.abs(diff) > 50) { // Minimum swipe distance
+        if (diff > 0) {
+          // Swipe right (show previous)
+          currentIndex = (currentIndex - 1 + imageList.length) % imageList.length;
+        } else {
+          // Swipe left (show next)
+          currentIndex = (currentIndex + 1) % imageList.length;
+        }
+        showModalImage(currentIndex);
+      }
+    }
+    </script>
+  </body>
 </html>
 
